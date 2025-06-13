@@ -6,7 +6,6 @@
 **Affilify** is a high-performance, multi-guild Discord bot written in Rust. It automatically cleans and tags Amazon links with your affiliate tag, tracks usage statistics, and supports custom footers per server.
 
 
-
 ![forthebadge](https://forthebadge.com/images/badges/license-mit.svg) ![forthebadge](https://forthebadge.com/images/badges/made-with-rust.svg) ![forthebadge](https://forthebadge.com/images/badges/contains-17-coffee-cups.svg) ![forthebadge](https://forthebadge.com/images/badges/it-works-why.svg)
 
 ---
@@ -87,6 +86,8 @@ Example:
 ---
 
 ## 🐳 Docker & Docker Compose
+
+[![CI - Build & Push Multi-Arch Docker Image](https://github.com/bnfone/discord-bot-affilify/actions/workflows/docker-multiarch.yml/badge.svg)](https://github.com/bnfone/discord-bot-affilify/actions/workflows/docker-multiarch.yml)
 
 **Dockerfile** builds a multi-stage image:
 
