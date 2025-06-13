@@ -1,0 +1,28 @@
+[package]
+name = "discord-bot-affilify"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+serenity = { version = "0.11", default-features = false, features = ["client","gateway",  "model", "http", "builder",  "rustls_backend"] }
+
+# Discord-Bot-Framework
+# Async-Runtime
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+
+# HTTP-Client mit Redirect-Support out-of-the-box
+reqwest = { version = "0.11", features = ["json", "gzip"] }
+
+# SQLite als dateibasierte DB
+rusqlite = { version = "0.29", features = ["bundled"] }
+
+# .env-Datei einlesen
+dotenvy = "0.15"
+
+# URL-Parsing & Regex
+url = "2"
+regex = "1"
+
+# für Datums-Timestamps (optional)
+chrono = { version = "0.4", features = ["serde"] }

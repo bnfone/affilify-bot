@@ -1,0 +1,93 @@
+// src/main.rs
+// Entry point for Affilify Discord bot in Rust (MIT License)
+use serenity::{
+    async_trait,
+    model::{gateway::Ready, application::interaction::Interaction, channel::Message},
+    prelude::*,
+};
+
+mod config;
+mod db;
+mod utils;
+mod commands {
+    pub mod amazon;
+    pub mod configure;
+    pub mod stats;
+}
+
+struct Handler;
+
+#[async_trait]
+impl EventHandler for Handler {
+    /// Called when the bot successfully connects to Discord.
+    async fn ready(&self, ctx: Context, ready: Ready) {
+        println!("{} is connected!", ready.user.name);
+
+        // Register slash commands at startup
+        commands::configure::register_commands(&ctx.http).await;
+        commands::amazon::register_commands(&ctx.http).await;
+        commands::stats::register_commands(&ctx.http).await;
+    }
+
+    /// Handle incoming interactions (slash commands).
+    async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
+        if let Interaction::ApplicationCommand(cmd) = interaction {
+            match cmd.data.name.as_str() {
+                "configure" => commands::configure::run(&ctx, &cmd).await,
+                "amazon"    => commands::amazon::run(&ctx, &cmd).await,
+                "stats"     => commands::stats::run(&ctx, &cmd).await,
+                _            => {}
+            }
+        }
+    }
+
+    /// Monitor all messages: delete raw Amazon links and instruct users to use `/amazon`.
+    async fn message(&self, ctx: Context, msg: Message) {
+        // Ignore messages from bots
+        if msg.author.bot {
+            return;
+        }
+
+        let content = msg.content.trim();
+        // Check for raw Amazon or short links
+        if content.contains("amazon.") || content.contains("amzn.to") {
+            // Delete the original message if permissions allow
+            let _ = msg.delete(&ctx.http).await;
+
+            // DM the user with guidance
+            if let Ok(dm) = msg.author.create_dm_channel(&ctx.http).await {
+                let _ = dm.say(&ctx.http,
+                    "Please use the slash command `/amazon <link>` so I can clean and tag your URL."
+                ).await;
+            }
+        }
+    }
+}
+
+#[tokio::main]
+async fn main() {
+    // Load .env configuration
+    config::init().expect("Failed to load .env");
+
+    // Initialize SQLite database
+    db::init().expect("Failed to initialize database");
+
+    // Retrieve Discord token from environment
+    let token = config::discord_token();
+
+    // Define the necessary gateway intents
+    let intents = GatewayIntents::GUILDS
+        | GatewayIntents::GUILD_MESSAGES
+        | GatewayIntents::MESSAGE_CONTENT;
+
+    // Build the client
+    let mut client = Client::builder(&token, intents)
+        .event_handler(Handler)
+        .await
+        .expect("Error creating client");
+
+    // Start the bot
+    if let Err(why) = client.start().await {
+        eprintln!("Client error: {:?}", why);
+    }
+}
