@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  affilify:
+    build: .
+    container_name: affilify_bot
+    restart: unless-stopped
+
+    # Lädt dein .env mit DISCORD_TOKEN, DATABASE_URL, etc.
+    env_file:
+      - .env
+
+    # Mount die lokale Datenbank ins Container-Verzeichnis
+    volumes:
+      - type: bind
+        source: ./bot.db
+        target: /app/bot.db
+
+    # Keine Ports nötig für Discord-Bots
