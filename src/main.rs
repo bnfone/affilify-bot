@@ -5,6 +5,7 @@ use serenity::{
     model::{gateway::Ready, application::interaction::Interaction, channel::Message},
     prelude::*,
 };
+use serenity::prelude::Mentionable;
 
 mod config;
 mod db;
@@ -22,7 +23,6 @@ impl EventHandler for Handler {
     /// Called when the bot successfully connects to Discord.
     async fn ready(&self, ctx: Context, ready: Ready) {
         println!("{} is connected!", ready.user.name);
-
         // Register slash commands at startup
         commands::configure::register_commands(&ctx.http).await;
         commands::amazon::register_commands(&ctx.http).await;
@@ -41,7 +41,7 @@ impl EventHandler for Handler {
         }
     }
 
-    /// Monitor all messages: delete raw Amazon links and instruct users to use `/amazon`.
+    /// Monitor all messages: delete raw Amazon links and send a temporary hint in-channel.
     async fn message(&self, ctx: Context, msg: Message) {
         // Ignore messages from bots
         if msg.author.bot {
@@ -49,16 +49,25 @@ impl EventHandler for Handler {
         }
 
         let content = msg.content.trim();
-        // Check for raw Amazon or short links
+        // Detect raw Amazon or short links
         if content.contains("amazon.") || content.contains("amzn.to") {
-            // Delete the original message if permissions allow
+            // Delete original message
             let _ = msg.delete(&ctx.http).await;
 
-            // DM the user with guidance
-            if let Ok(dm) = msg.author.create_dm_channel(&ctx.http).await {
-                let _ = dm.say(&ctx.http,
-                    "Please use the slash command `/amazon <link>` so I can clean and tag your URL."
-                ).await;
+            // Ping user in same channel with hint
+            let mention = msg.author.id.mention();
+            if let Ok(sent) = msg.channel_id.send_message(&ctx.http, |m| {
+                m.content(format!(
+                    "{}, please use `/amazon <link>` to clean and tag your URL.",
+                    mention
+                ))
+            }).await {
+                // Auto-delete the hint after 10 seconds
+                let http = ctx.http.clone();
+                tokio::spawn(async move {
+                    tokio::time::sleep(std::time::Duration::from_secs(10)).await;
+                    let _ = sent.delete(&http).await;
+                });
             }
         }
     }
@@ -68,24 +77,19 @@ impl EventHandler for Handler {
 async fn main() {
     // Load .env configuration
     config::init().expect("Failed to load .env");
-
     // Initialize SQLite database
     db::init().expect("Failed to initialize database");
-
     // Retrieve Discord token from environment
     let token = config::discord_token();
-
     // Define the necessary gateway intents
     let intents = GatewayIntents::GUILDS
         | GatewayIntents::GUILD_MESSAGES
         | GatewayIntents::MESSAGE_CONTENT;
-
     // Build the client
     let mut client = Client::builder(&token, intents)
         .event_handler(Handler)
         .await
         .expect("Error creating client");
-
     // Start the bot
     if let Err(why) = client.start().await {
         eprintln!("Client error: {:?}", why);

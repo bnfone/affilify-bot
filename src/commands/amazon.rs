@@ -9,7 +9,7 @@ use serenity::prelude::*;
 use rusqlite::params;
 use super::super::{db, utils};
 
-/// Register the `/amazon` command with a required URL option.
+/// Register the `/amazon` slash command with a URL option.
 pub async fn register_commands(http: &Http) {
     let _ = Command::create_global_application_command(http, |cmd| {
         cmd.name("amazon")
@@ -27,58 +27,58 @@ pub async fn register_commands(http: &Http) {
 /// Handler for the `/amazon` command.
 /// - Resolves short URLs
 /// - Parses ASIN and region
-/// - Retrieves tracking tag and footer for the guild
-/// - Logs the usage in the database
-/// - Returns a cleaned, tagged embed to the user
+/// - Retrieves tracking tag and footer template
+/// - Logs usage in the database
+/// - Replies with a plain message: cleaned link + footer
 pub async fn run(ctx: &Context, cmd: &ApplicationCommandInteraction) {
-    // Convert guild ID to string
+    // Guild ID as string
     let guild_id = cmd.guild_id.unwrap().0.to_string();
 
-    // Extract the raw URL from the first option
-    let url_raw = if let CommandDataOptionValue::String(u) =
-        &cmd.data.options[0].resolved.as_ref().unwrap()
-    {
+    // Extract raw URL argument
+    let url_raw = if let CommandDataOptionValue::String(u) = &cmd.data.options[0].resolved.as_ref().unwrap() {
         u.clone()
     } else {
-        "".to_string()
+        String::new()
     };
 
-    // Follow redirects if it's a short URL
+    // Resolve redirects
     let resolved = utils::resolve_url(&url_raw).await.unwrap_or_else(|_| url_raw.clone());
 
-    // Parse the ASIN and region (e.g. ("B0EXAMPLE", "de"))
+    // Parse ASIN and region
     if let Some((asin, region)) = utils::parse_amazon_url(&resolved) {
-        // Fetch tracking tag and footer from the database
-        let (tag, footer) = db::with_connection(|conn| {
+        // Default footer template
+        let default_template = "Using this link you support our server!".to_string();
+
+        // Fetch tracking tag and footer template
+        let (tag, footer_template) = db::with_connection(|conn| {
             let tag: String = conn.query_row(
                 "SELECT tracking_tag FROM guild_affiliates WHERE guild_id = ? AND region = ?",
                 params![guild_id, region],
                 |r| r.get(0),
             )?;
-            let footer: String = conn
-                .query_row(
+            let footer: String = conn.query_row(
                     "SELECT footer_text FROM guild_settings WHERE guild_id = ?",
                     params![guild_id],
                     |r| r.get(0),
                 )
-                .unwrap_or_else(|_| "Using this link you support our server!".to_string());
+                .unwrap_or_else(|_| default_template.clone());
             Ok((tag, footer))
         })
-        .unwrap_or_else(|_| ("".to_string(), "Using this link you support our server!".to_string()));
+        .unwrap_or((String::new(), default_template.clone()));
 
-        // If no tag is set for this region, inform the user
+        // If no tag configured, inform user
         if tag.is_empty() {
             let _ = cmd
                 .create_interaction_response(&ctx.http, |resp|
                     resp.kind(InteractionResponseType::ChannelMessageWithSource)
                         .interaction_response_data(|m| m.content(
-                            "No tracking tag configured for this region. Ask an admin to run `/configure`.",
+                            "No tracking tag configured for this region. Ask an admin to run `/configure`."
                         )))
                 .await;
             return;
         }
 
-        // Log this link usage
+        // Log usage
         let _ = db::with_connection(|conn| {
             conn.execute(
                 "INSERT INTO link_stats (guild_id, region) VALUES (?, ?)",
@@ -86,29 +86,32 @@ pub async fn run(ctx: &Context, cmd: &ApplicationCommandInteraction) {
             )
         });
 
-        // Build the cleaned, tagged URL
+        // Build cleaned URL
         let clean_url = format!("https://amazon.{}/dp/{}/?tag={}", region, asin, tag);
 
-        // Respond with an embed containing the affiliate link
+        // Construct footer with sender mention support
+        let sender_mention = format!("<@{}>", cmd.user.id.0);
+        let footer = if footer_template.contains("{{sender}}") {
+            footer_template.replace("{{sender}}", &sender_mention)
+        } else {
+            format!("{} recommended this. {}", sender_mention, footer_template)
+        };
+
+        // Send plain message: link + "-# footer"
+        let response = format!("{}\n-# {}", clean_url, footer);
         let _ = cmd
-            .create_interaction_response(&ctx.http, |resp| {
+            .create_interaction_response(&ctx.http, |resp|
                 resp.kind(InteractionResponseType::ChannelMessageWithSource)
-                    .interaction_response_data(|m|
-                        m.embed(|e| {
-                            e.title("Your affiliate link")
-                                .description(clean_url)
-                                .footer(|f| f.text(footer))
-                        }),
-                    )
-            })
+                    .interaction_response_data(|m| m.content(response))
+            )
             .await;
     } else {
-        // URL parsing failed
+        // Parsing failed
         let _ = cmd
             .create_interaction_response(&ctx.http, |resp|
                 resp.kind(InteractionResponseType::ChannelMessageWithSource)
                     .interaction_response_data(|m| m.content(
-                        "Could not parse Amazon URL. Ensure it's a valid Amazon link.",
+                        "Could not parse Amazon URL. Ensure it's valid."
                     )))
             .await;
     }
