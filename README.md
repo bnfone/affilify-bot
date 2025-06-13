@@ -26,13 +26,14 @@
 
 ## 🚀 Quick Start
 
+> [!NOTE] 
+> If you become an Amazon millionaire thanks to this bot, a [small tip](https://donate.stripe.com/6oE2bm5Y76vG9A47sz) to the dev keeps the code flowing!
 
-Bot Invitation Link
 
-Invite Affilify to your server:
+<kbd> <br> [Invite Affilify to your server][https://discord.com/oauth2/authorize?client_id=1383091487293575270&permissions=274878000129&integration_type=0&scope=bot] <br> </kbd>
 
-> [!INFO] 
-> If you become an Amazon millionaire thanks to this bot, a [small tip](https://donate.stripe.com/6oE2bm5Y76vG9A47sz) to the dev keeps the code flowing! 
+
+ 
 
 ### 1. Clone & Build Locally
 
@@ -146,4 +147,4 @@ This project is licensed under the **MIT License**. See [LICENSE](./LICENSE) for
 
 
 ---
-![forthebadge](https://forthebadge.com/images/badges/code-written-by-chatgpt-ai-ftw.svg) ![forthebadge](https://forthebadge.com/images/badges/fake-it-make-it-1.svg) ![forthebadge](data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjguNjU2MjY5MDczNDg2MzMiIGhlaWdodD0iMzUiIHZpZXdCb3g9IjAgMCAxMjguNjU2MjY5MDczNDg2MzMgMzUiPjxyZWN0IHdpZHRoPSI1NS4zMzU5NDUxMjkzOTQ1MyIgaGVpZ2h0PSIzNSIgZmlsbD0iIzMxQzRGMyIvPjxyZWN0IHg9IjU1LjMzNTk0NTEyOTM5NDUzIiB3aWR0aD0iNzMuMzIwMzIzOTQ0MDkxOCIgaGVpZ2h0PSIzNSIgZmlsbD0iIzM4OUFENSIvPjx0ZXh0IHg9IjI3LjY2Nzk3MjU2NDY5NzI2NiIgeT0iMjEuNSIgZm9udC1zaXplPSIxMiIgZm9udC1mYW1pbHk9IidSb2JvdG8nLCBzYW5zLXNlcmlmIiBmaWxsPSIjRkZGRkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBsZXR0ZXItc3BhY2luZz0iMiI+VklCRTwvdGV4dD48dGV4dCB4PSI5MS45OTYxMDcxMDE0NDA0MyIgeT0iMjEuNSIgZm9udC1zaXplPSIxMiIgZm9udC1mYW1pbHk9IidNb250c2VycmF0Jywgc2Fucy1zZXJpZiIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC13ZWlnaHQ9IjkwMCIgbGV0dGVyLXNwYWNpbmc9IjIiPkNPREVEPC90ZXh0Pjwvc3ZnPg==) ![forthebadge](data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxODEuNzQyMjAyNzU4Nzg5MDYiIGhlaWdodD0iMzUiIHZpZXdCb3g9IjAgMCAxODEuNzQyMjAyNzU4Nzg5MDYgMzUiPjxyZWN0IHdpZHRoPSI4My4zMjAzMjAxMjkzOTQ1MyIgaGVpZ2h0PSIzNSIgZmlsbD0iI2Y1YTYyMyIvPjxyZWN0IHg9IjgzLjMyMDMyMDEyOTM5NDUzIiB3aWR0aD0iOTguNDIxODgyNjI5Mzk0NTMiIGhlaWdodD0iMzUiIGZpbGw9IiM0YTRhNGEiLz48dGV4dCB4PSI0MS42NjAxNjAwNjQ2OTcyNjYiIHk9IjIxLjUiIGZvbnQtc2l6ZT0iMTIiIGZvbnQtZmFtaWx5PSInUm9ib3RvJywgc2Fucy1zZXJpZiIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgbGV0dGVyLXNwYWNpbmc9IjIiPkFNQVpPTjwvdGV4dD48dGV4dCB4PSIxMzIuNTMxMjYxNDQ0MDkxOCIgeT0iMjEuNSIgZm9udC1zaXplPSIxMiIgZm9udC1mYW1pbHk9IidNb250c2VycmF0Jywgc2Fucy1zZXJpZiIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC13ZWlnaHQ9IjkwMCIgbGV0dGVyLXNwYWNpbmc9IjIiPkFGRklMSUFURTwvdGV4dD48L3N2Zz4=)
+![forthebadge](https://forthebadge.com/images/badges/code-written-by-chatgpt-ai-ftw.svg) ![forthebadge](https://forthebadge.com/images/badges/fake-it-make-it-1.svg)
