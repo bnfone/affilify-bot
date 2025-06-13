@@ -29,8 +29,8 @@
 > [!NOTE] 
 > If you become an Amazon millionaire thanks to this bot, a [small tip](https://donate.stripe.com/6oE2bm5Y76vG9A47sz) to the dev keeps the code flowing!
 
+[![Invite](https://img.shields.io/badge/-Invite%20Bot-5865F2?logo=discord&logoColor=white)](https://discord.com/oauth2/authorize?client_id=1383091487293575270&permissions=274878000129&integration_type=0&scope=bot)
 
-<kbd> <br> [Invite Affilify to your server][https://discord.com/oauth2/authorize?client_id=1383091487293575270&permissions=274878000129&integration_type=0&scope=bot] <br> </kbd>
 
 
  
