@@ -38,7 +38,7 @@
 ### 1. Clone & Build Locally
 
 ```bash
-git clone https://github.com/<your-org>/discord-bot-affilify.git
+git clone https://github.com/bnfone/discord-bot-affilify.git
 cd discord-bot-affilify
 
 # Copy example env and fill in your token
