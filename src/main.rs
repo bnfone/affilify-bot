@@ -29,15 +29,29 @@ impl EventHandler for Handler {
         commands::stats::register_commands(&ctx.http).await;
     }
 
-    /// Handle incoming interactions (slash commands).
+    /// Handle incoming interactions (slash commands, autocomplete, modals).
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
-        if let Interaction::ApplicationCommand(cmd) = interaction {
-            match cmd.data.name.as_str() {
-                "configure" => commands::configure::run(&ctx, &cmd).await,
-                "amazon"    => commands::amazon::run(&ctx, &cmd).await,
-                "stats"     => commands::stats::run(&ctx, &cmd).await,
-                _            => {}
-            }
+        match interaction {
+            Interaction::ApplicationCommand(cmd) => {
+                match cmd.data.name.as_str() {
+                    "configure" => commands::configure::run(&ctx, &cmd).await,
+                    "amazon"    => commands::amazon::run(&ctx, &cmd).await,
+                    "stats"     => commands::stats::run(&ctx, &cmd).await,
+                    _            => {}
+                }
+            },
+            Interaction::Autocomplete(autocomplete) => {
+                match autocomplete.data.name.as_str() {
+                    "configure" => commands::configure::handle_autocomplete(&ctx, &autocomplete).await,
+                    _ => {}
+                }
+            },
+            Interaction::ModalSubmit(modal) => {
+                if modal.data.custom_id.starts_with("config_modal_") {
+                    commands::configure::handle_modal(&ctx, &modal).await;
+                }
+            },
+            _ => {}
         }
     }
 

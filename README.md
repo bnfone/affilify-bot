@@ -78,22 +78,44 @@ In the Discord Developer Portal, under your Bot settings:
 
 ### 3. Slash Commands
 
-* `/configure region:<code> tag:<your-tag> [footer:<text>]` — Set your affiliate tag and optional custom footer (Server only)
+* `/configure <region>` — Opens beautiful modal dialog with autocomplete for region selection (Server only)
 * `/amazon url:<link>` — Clean & tag your Amazon link (Works in servers and DMs)
 * `/stats` — Show total and per-server link counts
 
 **Usage Examples:**
 
 ```
-# Server configuration (admin only)
-/configure region: de tag: mytag-21 footer: "{{sender}} recommended this and supports us!"
+# Server configuration (admin only) - Opens beautiful modal with autocomplete
+/configure Global Settings    # Configure all regions at once
+/configure USA                # Configure just USA marketplace
+/configure Germany            # Configure just German marketplace
 
-# Link cleaning (works everywhere)
+# Link cleaning (works everywhere)  
 /amazon https://amzn.to/xyz123
 
 # Statistics
 /stats
 ```
+
+**🎨 Beautiful Configuration Experience:**
+1. **Smart Autocomplete**: Type `/configure` and get instant suggestions with flag emojis
+2. **Professional Modal**: Clean, intuitive popup dialog with pre-filled current settings
+3. **Region-Specific**: Configure individual marketplaces or use "Global Settings" for all
+4. **Visual Feedback**: Immediate confirmation with region count and success status
+
+**Configuration Features:**
+- 🏷️ **Tracking Tag Input**: Set your affiliate tag for the selected region
+- 💬 **Custom Footer**: Optional personalized message with `{{sender}}` placeholder support
+- 🔄 **Smart Pre-filling**: Shows current configuration for easy editing
+- 🌍 **Global Mode**: Special option to apply settings to all regions simultaneously
+
+**🌍 Supported Amazon Marketplaces:**
+**North America**: 🇺🇸 USA • 🇨🇦 Canada • 🇲🇽 Mexico  
+**South America**: 🇧🇷 Brazil  
+**Europe**: 🇬🇧 UK • 🇩🇪 Germany • 🇫🇷 France • 🇪🇸 Spain • 🇮🇹 Italy • 🇳🇱 Netherlands • 🇸🇪 Sweden • 🇵🇱 Poland  
+**Middle East**: 🇦🇪 UAE • 🇸🇦 Saudi Arabia  
+**Asia**: 🇮🇳 India • 🇯🇵 Japan • 🇸🇬 Singapore • 🇨🇳 China  
+**Oceania**: 🇦🇺 Australia
 
 **DM Usage:** When used in Direct Messages, the bot automatically uses your configured default tracking tags and signature, ensuring you get compensated for unconfigured usage.
 
@@ -159,15 +181,37 @@ The `.env` file supports the following configuration:
 DISCORD_TOKEN=your_bot_token_here
 DATABASE_URL=sqlite://./bot.db
 
-# Default tracking tags for developer compensation
-DEFAULT_TRACKING_TAG_DE=your-tag-21      # Germany
-DEFAULT_TRACKING_TAG_COM=your-tag-20     # United States
-DEFAULT_TRACKING_TAG_CO_UK=your-tag-21   # United Kingdom
-DEFAULT_TRACKING_TAG_FR=your-tag-21      # France
-DEFAULT_TRACKING_TAG_IT=your-tag-21      # Italy
-DEFAULT_TRACKING_TAG_ES=your-tag-21      # Spain
-DEFAULT_TRACKING_TAG_CO_JP=your-tag-22   # Japan
-DEFAULT_TRACKING_TAG_CA=your-tag-20      # Canada
+# Default tracking tags for developer compensation (19 Amazon marketplaces)
+# North America
+DEFAULT_TRACKING_TAG_COM=your-tag-20        # 🇺🇸 United States
+DEFAULT_TRACKING_TAG_CA=your-tag-20         # 🇨🇦 Canada
+DEFAULT_TRACKING_TAG_COM_MX=your-tag-20     # 🇲🇽 Mexico
+
+# South America
+DEFAULT_TRACKING_TAG_BR=your-tag-20         # 🇧🇷 Brazil
+
+# Europe
+DEFAULT_TRACKING_TAG_CO_UK=your-tag-21      # 🇬🇧 United Kingdom
+DEFAULT_TRACKING_TAG_DE=your-tag-21         # 🇩🇪 Germany
+DEFAULT_TRACKING_TAG_FR=your-tag-21         # 🇫🇷 France
+DEFAULT_TRACKING_TAG_ES=your-tag-21         # 🇪🇸 Spain
+DEFAULT_TRACKING_TAG_IT=your-tag-21         # 🇮🇹 Italy
+DEFAULT_TRACKING_TAG_NL=your-tag-21         # 🇳🇱 Netherlands
+DEFAULT_TRACKING_TAG_SE=your-tag-21         # 🇸🇪 Sweden
+DEFAULT_TRACKING_TAG_PL=your-tag-21         # 🇵🇱 Poland
+
+# Middle East
+DEFAULT_TRACKING_TAG_AE=your-tag-21         # 🇦🇪 UAE
+DEFAULT_TRACKING_TAG_SA=your-tag-21         # 🇸🇦 Saudi Arabia
+
+# Asia
+DEFAULT_TRACKING_TAG_IN=your-tag-21         # 🇮🇳 India
+DEFAULT_TRACKING_TAG_CO_JP=your-tag-22      # 🇯🇵 Japan
+DEFAULT_TRACKING_TAG_SG=your-tag-23         # 🇸🇬 Singapore
+DEFAULT_TRACKING_TAG_CN=your-tag-23         # 🇨🇳 China
+
+# Oceania
+DEFAULT_TRACKING_TAG_COM_AU=your-tag-23     # 🇦🇺 Australia
 
 # Default signature for DMs and fallback
 DEFAULT_SIGNATURE="🤖 Powered by Affilify Bot - Supporting developers worldwide!"
@@ -182,37 +226,50 @@ DEFAULT_SIGNATURE="🤖 Powered by Affilify Bot - Supporting developers worldwid
 
 ## 📄 Changelog
 
+### Version 3.0.0 - Professional Modal Interface & Global Amazon Support
+
+#### 🎨 Revolutionary User Experience
+- **Smart Autocomplete Interface**: Type `/configure` and get beautiful dropdown with flag emojis
+- **Professional Modal Dialogs**: Clean, intuitive popup forms with pre-filled current settings
+- **Visual Region Selection**: Instant suggestions with country flags and marketplace names
+- **Global Configuration Mode**: Special "Global Settings" option to configure all regions at once
+- **Real-time Feedback**: Immediate success confirmation with region counts
+
+#### 🌍 Complete Amazon Marketplace Coverage (19 Regions)
+- **North America**: 🇺🇸 USA, 🇨🇦 Canada, 🇲🇽 Mexico
+- **South America**: 🇧🇷 Brazil  
+- **Europe**: 🇬🇧 UK, 🇩🇪 Germany, 🇫🇷 France, 🇪🇸 Spain, 🇮🇹 Italy, 🇳🇱 Netherlands, 🇸🇪 Sweden, 🇵🇱 Poland
+- **Middle East**: 🇦🇪 UAE, 🇸🇦 Saudi Arabia
+- **Asia**: 🇮🇳 India, 🇯🇵 Japan, 🇸🇬 Singapore, 🇨🇳 China
+- **Oceania**: 🇦🇺 Australia
+
+#### 🔧 Technical Excellence
+- **Advanced Autocomplete System**: Dynamic region filtering with fuzzy search
+- **Modal Response Handling**: Proper Serenity 0.11 implementation with error handling
+- **Smart Database Logic**: Efficient region-specific and global configuration updates
+- **Enhanced Interaction Handlers**: Support for autocomplete, modals, and slash commands
+- **Comprehensive Environment Setup**: All 19 marketplaces pre-configured in `.env.example`
+
+#### 💡 Usability Improvements
+- **Zero Learning Curve**: Intuitive interface that guides users through configuration
+- **Context-Aware Inputs**: Smart placeholders and pre-filled values
+- **Professional Polish**: Beautiful titles, icons, and visual feedback
+- **Flexible Configuration**: Individual regions or global batch updates
+- **Error Prevention**: Clear validation and helpful error messages
+
+#### 🔄 Migration from v2.0.0
+- **Enhanced Commands**: `/configure` now features professional autocomplete interface
+- **Backward Compatible**: All existing configurations preserved and enhanced
+- **Improved Environment**: Updated `.env` structure with organized regional groupings
+- **Streamlined Setup**: Configuration is now a delightful, guided experience
+
 ### Version 2.0.0 - User Install & Developer Fallback Support
 
-#### 🆕 New Features
-- **User Install Support**: Bot now works as both server installation and user installation for DMs
-- **Developer Fallback System**: Automatic fallback to developer tracking tags when no server configuration exists
-- **DM Support**: Full functionality in Direct Messages with developer compensation
-- **Configurable Defaults**: Environment-based default tracking tags and signatures for all Amazon regions
-- **Smart Context Detection**: Bot automatically detects DM vs server context and adjusts behavior accordingly
-
-#### 🔧 Technical Changes
-- Added `DIRECT_MESSAGES` gateway intent for DM support
-- Enhanced `amazon.rs` with DM detection and fallback logic
-- New configuration functions in `config.rs` for default tracking tags and signatures
-- Updated `.env.example` with comprehensive default tracking configuration for 8 Amazon regions
-- Fixed emoji parsing in environment variables (proper quoting required)
-- Improved error handling for missing configuration scenarios
-
-#### 🐛 Bug Fixes
-- Fixed `.env` parsing error with special characters in `DEFAULT_SIGNATURE`
-- Added proper string quoting for environment variables containing emojis or special characters
-
-#### 💡 Benefits
-- **Fair Developer Compensation**: Ensures developers get paid even when bot isn't configured on servers
-- **Enhanced User Experience**: Seamless functionality across servers and DMs
-- **Reduced Configuration Overhead**: Works out-of-the-box with sensible defaults
-- **Global Amazon Support**: Pre-configured for major Amazon marketplaces worldwide
-
-#### 🔄 Migration Notes
-- **Breaking Change**: `.env` format updated - check `.env.example` for new required variables
-- Users upgrading should update their `.env` file with new `DEFAULT_TRACKING_TAG_*` and `DEFAULT_SIGNATURE` variables
-- Existing server configurations remain unchanged and take priority over defaults
+#### 🆕 Previous Features
+- **User Install Support**: Bot works as both server and user installation
+- **Developer Fallback System**: Automatic compensation for unconfigured usage
+- **DM Support**: Full functionality in Direct Messages
+- **Smart Context Detection**: Automatic DM vs server context handling
 
 ---
 
