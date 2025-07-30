@@ -29,7 +29,7 @@ impl EventHandler for Handler {
         commands::stats::register_commands(&ctx.http).await;
     }
 
-    /// Handle incoming interactions (slash commands and modals).
+    /// Handle incoming interactions (slash commands, autocomplete, modals).
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         match interaction {
             Interaction::ApplicationCommand(cmd) => {
@@ -40,10 +40,15 @@ impl EventHandler for Handler {
                     _            => {}
                 }
             },
-            Interaction::ModalSubmit(modal) => {
-                match modal.data.custom_id.as_str() {
-                    "configure_modal" => commands::configure::handle_modal(&ctx, &modal).await,
+            Interaction::Autocomplete(autocomplete) => {
+                match autocomplete.data.name.as_str() {
+                    "configure" => commands::configure::handle_autocomplete(&ctx, &autocomplete).await,
                     _ => {}
+                }
+            },
+            Interaction::ModalSubmit(modal) => {
+                if modal.data.custom_id.starts_with("config_modal_") {
+                    commands::configure::handle_modal(&ctx, &modal).await;
                 }
             },
             _ => {}
