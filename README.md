@@ -32,6 +32,8 @@
 
 [![Invite](https://img.shields.io/badge/-Invite%20Bot-5865F2?logo=discord&logoColor=white)](https://discord.com/oauth2/authorize?client_id=1383091487293575270&permissions=274878000129&integration_type=0&scope=bot)
 
+*Add the bot to your user installed apps [here](https://discord.com/oauth2/authorize?client_id=1383091487293575270&integration_type=1&scope=applications.commands)!
+*
 
 
  
