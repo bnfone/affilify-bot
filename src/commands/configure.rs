@@ -214,43 +214,6 @@ fn get_current_config(guild_id: u64) -> std::collections::HashMap<String, String
     config
 }
 
-/// Format current configuration as text for the modal
-fn format_current_tags(config: &std::collections::HashMap<String, String>) -> String {
-    if config.is_empty() {
-        return String::new();
-    }
-    
-    let regions = [
-        ("com", "🇺🇸 USA"),
-        ("ca", "🇨🇦 Canada"), 
-        ("com.mx", "🇲🇽 Mexico"),
-        ("br", "🇧🇷 Brazil"),
-        ("co.uk", "🇬🇧 UK"),
-        ("de", "🇩🇪 Germany"),
-        ("fr", "🇫🇷 France"),
-        ("es", "🇪🇸 Spain"),
-        ("it", "🇮🇹 Italy"),
-        ("nl", "🇳🇱 Netherlands"),
-        ("se", "🇸🇪 Sweden"),
-        ("pl", "🇵🇱 Poland"),
-        ("ae", "🇦🇪 UAE"),
-        ("sa", "🇸🇦 Saudi Arabia"),
-        ("in", "🇮🇳 India"),
-        ("co.jp", "🇯🇵 Japan"),
-        ("sg", "🇸🇬 Singapore"),
-        ("cn", "🇨🇳 China"),
-        ("com.au", "🇦🇺 Australia"),
-    ];
-    
-    let mut result = Vec::new();
-    for (region_code, region_name) in regions.iter() {
-        if let Some(tag) = config.get(*region_code) {
-            result.push(format!("{}:{}  # {}", region_code, tag, region_name));
-        }
-    }
-    
-    result.join("\n")
-}
 
 /// Get current footer text
 fn get_current_footer(guild_id: u64) -> Option<String> {

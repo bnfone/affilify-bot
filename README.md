@@ -78,30 +78,44 @@ In the Discord Developer Portal, under your Bot settings:
 
 ### 3. Slash Commands
 
-* `/configure` — Opens interactive modal to configure tracking tags for all 19 Amazon marketplaces (Server only)
+* `/configure <region>` — Opens beautiful modal dialog with autocomplete for region selection (Server only)
 * `/amazon url:<link>` — Clean & tag your Amazon link (Works in servers and DMs)
 * `/stats` — Show total and per-server link counts
 
 **Usage Examples:**
 
 ```
-# Server configuration (admin only) - Opens interactive modal
-/configure
+# Server configuration (admin only) - Opens beautiful modal with autocomplete
+/configure Global Settings    # Configure all regions at once
+/configure USA                # Configure just USA marketplace
+/configure Germany            # Configure just German marketplace
 
-# Link cleaning (works everywhere)
+# Link cleaning (works everywhere)  
 /amazon https://amzn.to/xyz123
 
 # Statistics
 /stats
 ```
 
-**Configuration Modal:** The `/configure` command opens an intuitive modal dialog where you can:
-- Configure tracking tags for any of the 19 supported Amazon marketplaces
-- Set custom footer templates
-- Use a simple format: `region:tag` (e.g., `com:mytag-20`, `de:mytag-21`)
+**🎨 Beautiful Configuration Experience:**
+1. **Smart Autocomplete**: Type `/configure` and get instant suggestions with flag emojis
+2. **Professional Modal**: Clean, intuitive popup dialog with pre-filled current settings
+3. **Region-Specific**: Configure individual marketplaces or use "Global Settings" for all
+4. **Visual Feedback**: Immediate confirmation with region count and success status
 
-**Supported Amazon Marketplaces:**
-🇺🇸 USA (com) • 🇨🇦 Canada (ca) • 🇲🇽 Mexico (com.mx) • 🇧🇷 Brazil (br) • 🇬🇧 UK (co.uk) • 🇩🇪 Germany (de) • 🇫🇷 France (fr) • 🇪🇸 Spain (es) • 🇮🇹 Italy (it) • 🇳🇱 Netherlands (nl) • 🇸🇪 Sweden (se) • 🇵🇱 Poland (pl) • 🇦🇪 UAE (ae) • 🇸🇦 Saudi Arabia (sa) • 🇮🇳 India (in) • 🇯🇵 Japan (co.jp) • 🇸🇬 Singapore (sg) • 🇨🇳 China (cn) • 🇦🇺 Australia (com.au)
+**Configuration Features:**
+- 🏷️ **Tracking Tag Input**: Set your affiliate tag for the selected region
+- 💬 **Custom Footer**: Optional personalized message with `{{sender}}` placeholder support
+- 🔄 **Smart Pre-filling**: Shows current configuration for easy editing
+- 🌍 **Global Mode**: Special option to apply settings to all regions simultaneously
+
+**🌍 Supported Amazon Marketplaces:**
+**North America**: 🇺🇸 USA • 🇨🇦 Canada • 🇲🇽 Mexico  
+**South America**: 🇧🇷 Brazil  
+**Europe**: 🇬🇧 UK • 🇩🇪 Germany • 🇫🇷 France • 🇪🇸 Spain • 🇮🇹 Italy • 🇳🇱 Netherlands • 🇸🇪 Sweden • 🇵🇱 Poland  
+**Middle East**: 🇦🇪 UAE • 🇸🇦 Saudi Arabia  
+**Asia**: 🇮🇳 India • 🇯🇵 Japan • 🇸🇬 Singapore • 🇨🇳 China  
+**Oceania**: 🇦🇺 Australia
 
 **DM Usage:** When used in Direct Messages, the bot automatically uses your configured default tracking tags and signature, ensuring you get compensated for unconfigured usage.
 
@@ -212,17 +226,16 @@ DEFAULT_SIGNATURE="🤖 Powered by Affilify Bot - Supporting developers worldwid
 
 ## 📄 Changelog
 
-### Version 3.0.0 - Global Amazon Marketplace Support & Enhanced Configuration
+### Version 3.0.0 - Professional Modal Interface & Global Amazon Support
 
-#### 🌍 New Features
-- **19 Amazon Marketplaces**: Complete support for all major Amazon regions worldwide
-- **Interactive Configuration Modal**: Beautiful popup interface for setting up tracking tags
-- **Structured Configuration Format**: Simple `region:tag` format with inline comments
-- **Regional Organization**: Tags organized by continent (North America, Europe, Asia, etc.)
-- **Intelligent Pre-filling**: Modal shows current configuration for easy editing
-- **Batch Configuration**: Configure multiple regions simultaneously
+#### 🎨 Revolutionary User Experience
+- **Smart Autocomplete Interface**: Type `/configure` and get beautiful dropdown with flag emojis
+- **Professional Modal Dialogs**: Clean, intuitive popup forms with pre-filled current settings
+- **Visual Region Selection**: Instant suggestions with country flags and marketplace names
+- **Global Configuration Mode**: Special "Global Settings" option to configure all regions at once
+- **Real-time Feedback**: Immediate success confirmation with region counts
 
-#### 🆕 Supported Amazon Marketplaces
+#### 🌍 Complete Amazon Marketplace Coverage (19 Regions)
 - **North America**: 🇺🇸 USA, 🇨🇦 Canada, 🇲🇽 Mexico
 - **South America**: 🇧🇷 Brazil  
 - **Europe**: 🇬🇧 UK, 🇩🇪 Germany, 🇫🇷 France, 🇪🇸 Spain, 🇮🇹 Italy, 🇳🇱 Netherlands, 🇸🇪 Sweden, 🇵🇱 Poland
@@ -230,25 +243,25 @@ DEFAULT_SIGNATURE="🤖 Powered by Affilify Bot - Supporting developers worldwid
 - **Asia**: 🇮🇳 India, 🇯🇵 Japan, 🇸🇬 Singapore, 🇨🇳 China
 - **Oceania**: 🇦🇺 Australia
 
-#### 🔧 Technical Improvements
-- Complete `/configure` command overhaul with modal interface
-- Enhanced database handling for multi-region configuration
-- Structured text parsing for tracking tag configuration
-- Improved error handling and user feedback
-- Extended `.env.example` with all 19 Amazon marketplaces
+#### 🔧 Technical Excellence
+- **Advanced Autocomplete System**: Dynamic region filtering with fuzzy search
+- **Modal Response Handling**: Proper Serenity 0.11 implementation with error handling
+- **Smart Database Logic**: Efficient region-specific and global configuration updates
+- **Enhanced Interaction Handlers**: Support for autocomplete, modals, and slash commands
+- **Comprehensive Environment Setup**: All 19 marketplaces pre-configured in `.env.example`
 
-#### 💡 User Experience Enhancements
-- **No More Complex Commands**: Simple `/configure` opens user-friendly modal
-- **Visual Region Indicators**: Flag emojis for easy marketplace identification
-- **Flexible Input Format**: Support for comments and flexible formatting
-- **Configuration Validation**: Intelligent parsing and error handling
-- **Clear Success Feedback**: Shows number of configured regions
+#### 💡 Usability Improvements
+- **Zero Learning Curve**: Intuitive interface that guides users through configuration
+- **Context-Aware Inputs**: Smart placeholders and pre-filled values
+- **Professional Polish**: Beautiful titles, icons, and visual feedback
+- **Flexible Configuration**: Individual regions or global batch updates
+- **Error Prevention**: Clear validation and helpful error messages
 
 #### 🔄 Migration from v2.0.0
-- **Simplified Commands**: `/configure` no longer requires parameters - just run it!
-- **Enhanced Environment**: Update `.env` with new marketplace tracking tags
-- **Backward Compatible**: Existing configurations continue to work
-- **Improved Setup**: Much easier initial configuration process
+- **Enhanced Commands**: `/configure` now features professional autocomplete interface
+- **Backward Compatible**: All existing configurations preserved and enhanced
+- **Improved Environment**: Updated `.env` structure with organized regional groupings
+- **Streamlined Setup**: Configuration is now a delightful, guided experience
 
 ### Version 2.0.0 - User Install & Developer Fallback Support
 
