@@ -14,7 +14,9 @@
 
 * **Affiliate-Link Cleaning & Tagging**: Normalize any Amazon URL (including short links) to a clean `https://amazon.{region}/dp/{ASIN}/?tag={tracking_tag}` format.
 * **Short-URL Resolution**: Follows redirects for `amzn.to`, `amzn.eu`, etc.
+* **User Install Support**: Works both as server bot and user installation for DMs.
 * **Per-Server Configuration**: Admins or server owners can set affiliate tags and custom footer templates via `/configure`.
+* **Developer Fallback System**: Uses default developer tracking tags when no server configuration exists, ensuring fair compensation.
 * **Custom Footer**: Supports a `{{sender}}` placeholder or defaults to `@user recommended this…`.
 * **Usage Statistics**: Logs every `/amazon` invocation and exposes global & per-guild counts via `/stats`.
 * **Automatic Hint**: Raw Amazon links in chat are deleted and the user is pinged with a temporary hint to use `/amazon`.
@@ -40,10 +42,11 @@
 git clone https://github.com/bnfone/discord-bot-affilify.git
 cd discord-bot-affilify
 
-# Copy example env and fill in your token
+# Copy example env and configure your bot
 cp .env.example .env
-# Ensure DATABASE_URL points to a file path
-# e.g. DATABASE_URL=./bot.db
+# Edit .env and set your DISCORD_TOKEN
+# Configure default tracking IDs for each Amazon region
+# Set your preferred DEFAULT_SIGNATURE for DMs
 
 # Create the SQLite file before running
 touch bot.db
@@ -62,6 +65,10 @@ In the Discord Developer Portal, under your Bot settings:
 * **OAuth2 Scopes**:
 
   * `bot`, `applications.commands`
+* **Installation Types** (for User Install support):
+
+  * **Guild Install** (traditional server installation)
+  * **User Install** (personal bot access in DMs)
 * **Bot Permissions** (when adding to your server):
 
   * **Read Messages & History**
@@ -71,17 +78,24 @@ In the Discord Developer Portal, under your Bot settings:
 
 ### 3. Slash Commands
 
-* `/configure region:<code> tag:<your-tag> [footer:<text>]` — Set your affiliate tag and optional custom footer.
-* `/amazon url:<link>` — Clean & tag your Amazon link.
-* `/stats` — Show total and per-server link counts.
+* `/configure region:<code> tag:<your-tag> [footer:<text>]` — Set your affiliate tag and optional custom footer (Server only)
+* `/amazon url:<link>` — Clean & tag your Amazon link (Works in servers and DMs)
+* `/stats` — Show total and per-server link counts
 
-Example:
+**Usage Examples:**
 
 ```
+# Server configuration (admin only)
 /configure region: de tag: mytag-21 footer: "{{sender}} recommended this and supports us!"
+
+# Link cleaning (works everywhere)
 /amazon https://amzn.to/xyz123
+
+# Statistics
 /stats
 ```
+
+**DM Usage:** When used in Direct Messages, the bot automatically uses your configured default tracking tags and signature, ensuring you get compensated for unconfigured usage.
 
 ---
 
@@ -136,8 +150,69 @@ Register it under `.github/workflows/docker-multiarch.yml` to automatically publ
 
 ## 🔐 Configuration & Data
 
-* **`.env`-file**: store `DISCORD_TOKEN` and `DATABASE_URL`.
+### Environment Variables
+
+The `.env` file supports the following configuration:
+
+```env
+# Required
+DISCORD_TOKEN=your_bot_token_here
+DATABASE_URL=sqlite://./bot.db
+
+# Default tracking tags for developer compensation
+DEFAULT_TRACKING_TAG_DE=your-tag-21      # Germany
+DEFAULT_TRACKING_TAG_COM=your-tag-20     # United States
+DEFAULT_TRACKING_TAG_CO_UK=your-tag-21   # United Kingdom
+DEFAULT_TRACKING_TAG_FR=your-tag-21      # France
+DEFAULT_TRACKING_TAG_IT=your-tag-21      # Italy
+DEFAULT_TRACKING_TAG_ES=your-tag-21      # Spain
+DEFAULT_TRACKING_TAG_CO_JP=your-tag-22   # Japan
+DEFAULT_TRACKING_TAG_CA=your-tag-20      # Canada
+
+# Default signature for DMs and fallback
+DEFAULT_SIGNATURE="🤖 Powered by Affilify Bot - Supporting developers worldwide!"
+```
+
+### Database
+
 * **SQLite DB**: the file referenced by `DATABASE_URL` **must exist** before the bot starts, or create it with `touch bot.db`.
+* The bot automatically creates the necessary tables on first run.
+
+---
+
+## 📄 Changelog
+
+### Version 2.0.0 - User Install & Developer Fallback Support
+
+#### 🆕 New Features
+- **User Install Support**: Bot now works as both server installation and user installation for DMs
+- **Developer Fallback System**: Automatic fallback to developer tracking tags when no server configuration exists
+- **DM Support**: Full functionality in Direct Messages with developer compensation
+- **Configurable Defaults**: Environment-based default tracking tags and signatures for all Amazon regions
+- **Smart Context Detection**: Bot automatically detects DM vs server context and adjusts behavior accordingly
+
+#### 🔧 Technical Changes
+- Added `DIRECT_MESSAGES` gateway intent for DM support
+- Enhanced `amazon.rs` with DM detection and fallback logic
+- New configuration functions in `config.rs` for default tracking tags and signatures
+- Updated `.env.example` with comprehensive default tracking configuration for 8 Amazon regions
+- Fixed emoji parsing in environment variables (proper quoting required)
+- Improved error handling for missing configuration scenarios
+
+#### 🐛 Bug Fixes
+- Fixed `.env` parsing error with special characters in `DEFAULT_SIGNATURE`
+- Added proper string quoting for environment variables containing emojis or special characters
+
+#### 💡 Benefits
+- **Fair Developer Compensation**: Ensures developers get paid even when bot isn't configured on servers
+- **Enhanced User Experience**: Seamless functionality across servers and DMs
+- **Reduced Configuration Overhead**: Works out-of-the-box with sensible defaults
+- **Global Amazon Support**: Pre-configured for major Amazon marketplaces worldwide
+
+#### 🔄 Migration Notes
+- **Breaking Change**: `.env` format updated - check `.env.example` for new required variables
+- Users upgrading should update their `.env` file with new `DEFAULT_TRACKING_TAG_*` and `DEFAULT_SIGNATURE` variables
+- Existing server configurations remain unchanged and take priority over defaults
 
 ---
 

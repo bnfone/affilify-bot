@@ -81,9 +81,10 @@ async fn main() {
     db::init().expect("Failed to initialize database");
     // Retrieve Discord token from environment
     let token = config::discord_token();
-    // Define the necessary gateway intents
+    // Define the necessary gateway intents (including DM support)
     let intents = GatewayIntents::GUILDS
         | GatewayIntents::GUILD_MESSAGES
+        | GatewayIntents::DIRECT_MESSAGES
         | GatewayIntents::MESSAGE_CONTENT;
     // Build the client
     let mut client = Client::builder(&token, intents)
