@@ -12,14 +12,15 @@
 
 ## 📋 Features
 
+* **Complete DM & Group Chat Support**: `/amazon` command works in Direct Messages and Group Chats with friends using Discord's User Install feature.
 * **Affiliate-Link Cleaning & Tagging**: Normalize any Amazon URL (including short links) to a clean `https://amazon.{region}/dp/{ASIN}/?tag={tracking_tag}` format.
 * **Short-URL Resolution**: Follows redirects for `amzn.to`, `amzn.eu`, etc.
-* **User Install Support**: Works both as server bot and user installation for DMs.
+* **Dual Installation Types**: Works both as traditional server bot and personal user installation for universal access.
 * **Per-Server Configuration**: Admins or server owners can set affiliate tags and custom footer templates via `/configure`.
 * **Developer Fallback System**: Uses default developer tracking tags when no server configuration exists, ensuring fair compensation.
 * **Custom Footer**: Supports a `{{sender}}` placeholder or defaults to `@user recommended this…`.
-* **Usage Statistics**: Logs every `/amazon` invocation and exposes global & per-guild counts via `/stats`.
-* **Automatic Hint**: Raw Amazon links in chat are deleted and the user is pinged with a temporary hint to use `/amazon`.
+* **Enhanced Statistics**: Beautiful rich embeds showing global stats, server breakdown, and top Amazon regions with visual design.
+* **Automatic Hint**: Raw Amazon links in chat are deleted and the user is pinged with a temporary hint to use `/amazon` (servers only).
 * **Multi-Arch Docker**: Run on x86\_64, ARM64, Raspberry Pi, Apple Silicon, etc.
 * **Open Source** under the MIT License.
 
@@ -81,8 +82,8 @@ In the Discord Developer Portal, under your Bot settings:
 ### 3. Slash Commands
 
 * `/configure <region>` — Opens beautiful modal dialog with autocomplete for region selection (Server only)
-* `/amazon url:<link>` — Clean & tag your Amazon link (Works in servers and DMs)
-* `/stats` — Show total and per-server link counts
+* `/amazon url:<link>` — Clean & tag your Amazon link (Works in servers, DMs, and group chats)
+* `/stats` — Show rich embed with global stats, server stats, and top regions breakdown (Server only)
 
 **Usage Examples:**
 
@@ -92,10 +93,10 @@ In the Discord Developer Portal, under your Bot settings:
 /configure USA                # Configure just USA marketplace
 /configure Germany            # Configure just German marketplace
 
-# Link cleaning (works everywhere)  
+# Link cleaning (works in servers, DMs, and group chats)  
 /amazon https://amzn.to/xyz123
 
-# Statistics
+# Statistics (server only - shows beautiful embed)
 /stats
 ```
 
@@ -119,7 +120,23 @@ In the Discord Developer Portal, under your Bot settings:
 **Asia**: 🇮🇳 India • 🇯🇵 Japan • 🇸🇬 Singapore • 🇨🇳 China  
 **Oceania**: 🇦🇺 Australia
 
-**DM Usage:** When used in Direct Messages, the bot automatically uses your configured default tracking tags and signature, ensuring you get compensated for unconfigured usage.
+**DM & Group Chat Usage:** 
+- Works seamlessly in **Direct Messages** and **Group Chats** with friends
+- Automatically uses your configured default tracking tags and signature
+- Ensures you get compensated for all usage, even outside servers
+- **Installation required**: Users must install the bot as a "User App" for DM access
+
+### 📊 Enhanced Statistics
+
+The `/stats` command now displays a beautiful, rich embed featuring:
+
+- 🌐 **Global Total**: Total links generated across all servers
+- 🏠 **Server Stats**: Links generated in your current server  
+- 📈 **Top Regions**: Breakdown of most popular Amazon marketplaces
+- 🎨 **Professional Design**: Clean embed with Discord-friendly styling
+- 💰 **Encouraging Footer**: Motivational message for users
+
+Perfect for server admins to track affiliate link performance and see which Amazon regions are most popular with their community!
 
 ---
 
@@ -227,6 +244,32 @@ DEFAULT_SIGNATURE="🤖 Powered by Affilify Bot - Supporting developers worldwid
 ---
 
 ## 📄 Changelog
+
+### Version 4.0.0 - Full DM Support & Enhanced Statistics
+
+#### 🚀 DM & Group Chat Support  
+- **Complete DM Integration**: `/amazon` command now works in Direct Messages and Group Chats
+- **User Install App**: Proper Discord "User Install" integration using latest API features
+- **Serenity 0.12**: Upgraded to latest Serenity with `InstallationContext` and `InteractionContext` support
+- **Smart Context Detection**: Automatic handling of DM vs server contexts
+
+#### 📊 Enhanced Statistics Experience
+- **Rich Embed Display**: Beautiful, professional statistics embed with Discord-friendly styling
+- **Top Regions Breakdown**: Shows most popular Amazon marketplaces per server
+- **Visual Design**: Clean layout with emojis, proper colors, and encouraging footer
+- **Comprehensive Metrics**: Global totals, server-specific counts, and regional analytics
+
+#### 🔧 Technical Improvements  
+- **Integration Types**: Proper `InstallationContext::User` and `InstallationContext::Guild` support
+- **Context Restrictions**: `/configure` and `/stats` properly restricted to servers only
+- **Message Handler**: Smart DM detection to prevent deletion errors in private chats
+- **API Compliance**: Full compatibility with Discord's 2024 Integration Types & Command Contexts
+
+#### 💡 User Experience
+- **Seamless DM Usage**: Works exactly like in servers, but with developer fallback tags
+- **Group Chat Support**: Perfect for sharing affiliate links with friends privately  
+- **Visual Feedback**: Enhanced statistics with meaningful data visualization
+- **Professional Polish**: Consistent design language across all bot interactions
 
 ### Version 3.0.0 - Professional Modal Interface & Global Amazon Support
 

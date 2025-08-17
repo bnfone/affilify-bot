@@ -1,45 +1,53 @@
 // src/commands/configure.rs
 // Handles the `/configure` slash command: sets tracking tags and footer text per region.
 
+use serenity::all::{
+    Command, CommandInteraction, CommandOptionType, 
+    CreateCommand, CreateCommandOption,
+    CreateInteractionResponse, CreateInteractionResponseMessage,
+    CreateModal, CreateInputText, InputTextStyle, CreateActionRow,
+    CreateAutocompleteResponse, Interaction,
+    ActionRowComponent, Permissions,
+    InstallationContext, InteractionContext,
+};
 use serenity::http::Http;
-use serenity::model::application::command::Command;
-use serenity::model::application::interaction::application_command::ApplicationCommandInteraction;
-use serenity::model::application::interaction::InteractionResponseType;
-use serenity::model::application::interaction::MessageFlags;
-use serenity::model::permissions::Permissions;
 use serenity::prelude::*;
 use rusqlite::params;
 use super::super::db;
 
 /// Register the `/configure` command with autocomplete for regions.
 pub async fn register_commands(http: &Http) {
-    let _ = Command::create_global_application_command(http, |cmd| {
-        cmd.name("configure")
-            .description("🌍 Configure affiliate tracking for Amazon marketplaces")
-            .create_option(|opt| {
-                opt.name("region")
-                    .description("Amazon region to configure")
-                    .kind(serenity::model::application::command::CommandOptionType::String)
-                    .required(true)
-                    .set_autocomplete(true)
-            })
-    })
-    .await;
+    let command = CreateCommand::new("configure")
+        .description("🌍 Configure affiliate tracking for Amazon marketplaces")
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::String,
+                "region",
+                "Amazon region to configure"
+            )
+            .required(true)
+            .set_autocomplete(true)
+        )
+        .dm_permission(false)
+        // Nur im Server sichtbar machen:
+        .integration_types(vec![InstallationContext::Guild])
+        .contexts(vec![InteractionContext::Guild]);
+    
+    let _ = Command::create_global_command(http, command).await;
 }
 
 /// Handler for `/configure` command - opens modal for selected region.
-pub async fn run(ctx: &Context, cmd: &ApplicationCommandInteraction) {
+pub async fn run(ctx: &Context, cmd: &CommandInteraction) {
     // Ensure this is in a guild
     let guild_id_u64 = if let Some(guild_id) = cmd.guild_id {
-        guild_id.0
+        guild_id.get()
     } else {
-        let _ = cmd.create_interaction_response(&ctx.http, |r| {
-            r.kind(InteractionResponseType::ChannelMessageWithSource)
-                .interaction_response_data(|m| m
-                    .content("This command can only be used in a server.")
-                    .flags(MessageFlags::EPHEMERAL)
-                )
-        }).await;
+        let response = CreateInteractionResponse::Message(
+            CreateInteractionResponseMessage::new()
+                .content("This command can only be used in a server.")
+                .ephemeral(true)
+        );
+        let _ = cmd.create_response(&ctx.http, response).await;
         return;
     };
 
@@ -50,32 +58,26 @@ pub async fn run(ctx: &Context, cmd: &ApplicationCommandInteraction) {
         return;
     };
     let perms = member.permissions.unwrap_or(Permissions::empty());
-    let guild = match ctx.http.get_guild(guild_id_u64).await {
+    let guild = match ctx.http.get_guild(guild_id_u64.into()).await {
         Ok(g) => g,
         Err(_) => return,
     };
-    let is_owner = guild.owner_id.0 == cmd.user.id.0;
+    let is_owner = guild.owner_id.get() == cmd.user.id.get();
     if !is_owner && !perms.contains(Permissions::ADMINISTRATOR) {
-        let _ = cmd.create_interaction_response(&ctx.http, |r| {
-            r.kind(InteractionResponseType::ChannelMessageWithSource)
-                .interaction_response_data(|m| m
-                    .content("You must be a server administrator or the server owner to run this command.")
-                    .flags(MessageFlags::EPHEMERAL)
-                )
-        }).await;
+        let response = CreateInteractionResponse::Message(
+            CreateInteractionResponseMessage::new()
+                .content("You must be a server administrator or the server owner to run this command.")
+                .ephemeral(true)
+        );
+        let _ = cmd.create_response(&ctx.http, response).await;
         return;
     }
 
     // Get selected region
-    let region = if let Some(option) = cmd.data.options.get(0) {
-        if let Some(serenity::model::application::interaction::application_command::CommandDataOptionValue::String(r)) = &option.resolved {
-            r.clone()
-        } else {
-            "global".to_string()
-        }
-    } else {
-        "global".to_string()
-    };
+    let region = cmd.data.options.first()
+        .and_then(|opt| opt.value.as_str())
+        .unwrap_or("global")
+        .to_string();
 
     // Get current configuration
     let current_config = get_current_config(guild_id_u64);
@@ -86,22 +88,22 @@ pub async fn run(ctx: &Context, cmd: &ApplicationCommandInteraction) {
 }
 
 /// Handle autocomplete for region selection  
-pub async fn handle_autocomplete(ctx: &Context, autocomplete: &serenity::model::application::interaction::autocomplete::AutocompleteInteraction) {
-    let focused_option = autocomplete.data.options.iter()
-        .find(|opt| opt.focused);
-    
-    if let Some(option) = focused_option {
-        if option.name == "region" {
-            let input = option.value.as_ref().and_then(|v| v.as_str()).unwrap_or("");
-            let suggestions = get_region_suggestions(input);
-            
-            let _ = autocomplete.create_autocomplete_response(&ctx.http, |response| {
-                for (value, name) in suggestions.into_iter().take(25) {
-                    response.add_string_choice(&name, &value);
-                }
-                response
-            }).await;
+pub async fn handle_autocomplete(ctx: &Context, autocomplete: &Interaction) {
+    if let Interaction::Autocomplete(auto) = autocomplete {
+        // Find the focused option (the one being typed)
+        let input = auto.data.options.first()
+            .and_then(|opt| opt.value.as_str())
+            .unwrap_or("");
+        
+        let suggestions = get_region_suggestions(input);
+        
+        let mut response = CreateAutocompleteResponse::new();
+        for (value, name) in suggestions.into_iter().take(25) {
+            response = response.add_string_choice(&name, &value);
         }
+        
+        let autocomplete_response = CreateInteractionResponse::Autocomplete(response);
+        let _ = auto.create_response(&ctx.http, autocomplete_response).await;
     }
 }
 
@@ -142,7 +144,7 @@ fn get_region_suggestions(input: &str) -> Vec<(String, String)> {
 /// Open configuration modal for selected region
 async fn open_config_modal(
     ctx: &Context,
-    cmd: &ApplicationCommandInteraction,
+    cmd: &CommandInteraction,
     region: &str,
     current_config: &std::collections::HashMap<String, String>,
     current_footer: &Option<String>
@@ -156,37 +158,37 @@ async fn open_config_modal(
     let current_tag = current_config.get(region).cloned().unwrap_or_default();
     let current_footer_text = current_footer.clone().unwrap_or_default();
     
-    let _ = cmd.create_interaction_response(&ctx.http, |response| {
-        response.kind(InteractionResponseType::Modal)
-            .interaction_response_data(|data| {
-                data.custom_id(format!("config_modal_{}", region))
-                    .title(&modal_title)
-                    .components(|c| {
-                        c.create_action_row(|row| {
-                            row.create_input_text(|input| {
-                                input.custom_id("tracking_tag")
-                                    .label(format!("🏷️ Tracking Tag for {}", region.to_uppercase()))
-                                    .style(serenity::model::application::component::InputTextStyle::Short)
-                                    .placeholder(&format!("your-tag-{}", if region.contains("co.") { "21" } else { "20" }))
-                                    .max_length(50)
-                                    .required(false)
-                                    .value(&current_tag)
-                            })
-                        })
-                        .create_action_row(|row| {
-                            row.create_input_text(|input| {
-                                input.custom_id("footer_text")
-                                    .label("💬 Custom Footer (optional)")
-                                    .style(serenity::model::application::component::InputTextStyle::Paragraph)
-                                    .placeholder("{{sender}} recommended this and supports our server!")
-                                    .max_length(500)
-                                    .required(false)
-                                    .value(&current_footer_text)
-                            })
-                        })
-                    })
-            })
-    }).await;
+    let modal = CreateModal::new(
+        format!("config_modal_{}", region),
+        &modal_title
+    )
+    .components(vec![
+        CreateActionRow::InputText(
+            CreateInputText::new(
+                InputTextStyle::Short,
+                format!("🏷️ Tracking Tag for {}", region.to_uppercase()),
+                "tracking_tag"
+            )
+            .placeholder(format!("your-tag-{}", if region.contains("co.") { "21" } else { "20" }))
+            .max_length(50)
+            .required(false)
+            .value(&current_tag)
+        ),
+        CreateActionRow::InputText(
+            CreateInputText::new(
+                InputTextStyle::Paragraph,
+                "💬 Custom Footer (optional)",
+                "footer_text"
+            )
+            .placeholder("{{sender}} recommended this and supports our server!")
+            .max_length(500)
+            .required(false)
+            .value(&current_footer_text)
+        )
+    ]);
+    
+    let response = CreateInteractionResponse::Modal(modal);
+    let _ = cmd.create_response(&ctx.http, response).await;
 }
 
 /// Get current configuration for pre-filling the modal
@@ -229,45 +231,50 @@ fn get_current_footer(guild_id: u64) -> Option<String> {
 }
 
 /// Handle modal submission for configuration
-pub async fn handle_modal(ctx: &Context, modal: &serenity::model::application::interaction::modal::ModalSubmitInteraction) {
-    let guild_id = if let Some(guild_id) = modal.guild_id {
-        guild_id.0
-    } else {
-        return;
-    };
-    
-    // Extract region from custom_id
-    let region = modal.data.custom_id.strip_prefix("config_modal_")
-        .unwrap_or("unknown")
-        .to_string();
-    
-    let guild_id_str = guild_id.to_string();
-    
-    // Extract form data
-    let mut tracking_tag = None;
-    let mut footer_text = None;
-    
-    for action_row in &modal.data.components {
-        for component in &action_row.components {
-            if let serenity::model::application::component::ActionRowComponent::InputText(input) = component {
-                match input.custom_id.as_str() {
-                    "tracking_tag" => {
-                        let value = input.value.trim();
-                        if !value.is_empty() {
-                            tracking_tag = Some(value.to_string());
-                        }
-                    },
-                    "footer_text" => {
-                        let value = input.value.trim();
-                        if !value.is_empty() {
-                            footer_text = Some(value.to_string());
-                        }
-                    },
-                    _ => {}
+pub async fn handle_modal(ctx: &Context, modal: &Interaction) {
+    if let Interaction::Modal(modal_submit) = modal {
+        let guild_id = if let Some(guild_id) = modal_submit.guild_id {
+            guild_id.get()
+        } else {
+            return;
+        };
+        
+        // Extract region from custom_id
+        let region = modal_submit.data.custom_id.strip_prefix("config_modal_")
+            .unwrap_or("unknown")
+            .to_string();
+        
+        let guild_id_str = guild_id.to_string();
+        
+        // Extract form data
+        let mut tracking_tag = None;
+        let mut footer_text = None;
+        
+        for action_row in &modal_submit.data.components {
+            for component in &action_row.components {
+                if let ActionRowComponent::InputText(input) = component {
+                    match input.custom_id.as_str() {
+                        "tracking_tag" => {
+                            if let Some(value) = &input.value {
+                                let trimmed = value.trim();
+                                if !trimmed.is_empty() {
+                                    tracking_tag = Some(trimmed.to_string());
+                                }
+                            }
+                        },
+                        "footer_text" => {
+                            if let Some(value) = &input.value {
+                                let trimmed = value.trim();
+                                if !trimmed.is_empty() {
+                                    footer_text = Some(trimmed.to_string());
+                                }
+                            }
+                        },
+                        _ => {}
+                    }
                 }
             }
         }
-    }
     
     // Update database
     let res = db::with_connection(|conn| {
@@ -334,11 +341,11 @@ pub async fn handle_modal(ctx: &Context, modal: &serenity::model::application::i
         Err(e) => format!("❌ Error saving configuration: {:?}", e),
     };
     
-    let _ = modal.create_interaction_response(&ctx.http, |r| {
-        r.kind(InteractionResponseType::ChannelMessageWithSource)
-            .interaction_response_data(|m| {
-                m.content(content)
-                    .flags(MessageFlags::EPHEMERAL)
-            })
-    }).await;
+        let response = CreateInteractionResponse::Message(
+            CreateInteractionResponseMessage::new()
+                .content(content)
+                .ephemeral(true)
+        );
+        let _ = modal_submit.create_response(&ctx.http, response).await;
+    }
 }

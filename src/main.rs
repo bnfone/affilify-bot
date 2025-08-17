@@ -2,10 +2,9 @@
 // Entry point for Affilify Discord bot in Rust (MIT License)
 use serenity::{
     async_trait,
-    model::{gateway::Ready, application::interaction::Interaction, channel::Message},
+    all::{Ready, Interaction, Message, CreateMessage, Mentionable},
     prelude::*,
 };
-use serenity::prelude::Mentionable;
 
 mod config;
 mod db;
@@ -31,24 +30,24 @@ impl EventHandler for Handler {
 
     /// Handle incoming interactions (slash commands, autocomplete, modals).
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
-        match interaction {
-            Interaction::ApplicationCommand(cmd) => {
+        match &interaction {
+            Interaction::Command(cmd) => {
                 match cmd.data.name.as_str() {
-                    "configure" => commands::configure::run(&ctx, &cmd).await,
-                    "amazon"    => commands::amazon::run(&ctx, &cmd).await,
-                    "stats"     => commands::stats::run(&ctx, &cmd).await,
+                    "configure" => commands::configure::run(&ctx, cmd).await,
+                    "amazon"    => commands::amazon::run(&ctx, cmd).await,
+                    "stats"     => commands::stats::run(&ctx, cmd).await,
                     _            => {}
                 }
             },
             Interaction::Autocomplete(autocomplete) => {
                 match autocomplete.data.name.as_str() {
-                    "configure" => commands::configure::handle_autocomplete(&ctx, &autocomplete).await,
+                    "configure" => commands::configure::handle_autocomplete(&ctx, &interaction).await,
                     _ => {}
                 }
             },
-            Interaction::ModalSubmit(modal) => {
+            Interaction::Modal(modal) => {
                 if modal.data.custom_id.starts_with("config_modal_") {
-                    commands::configure::handle_modal(&ctx, &modal).await;
+                    commands::configure::handle_modal(&ctx, &interaction).await;
                 }
             },
             _ => {}
@@ -62,6 +61,11 @@ impl EventHandler for Handler {
             return;
         }
 
+        // Skip deletion logic in DMs
+        if msg.guild_id.is_none() {
+            return;
+        }
+
         let content = msg.content.trim();
         // Detect raw Amazon or short links
         if content.contains("amazon.") || content.contains("amzn.to") {
@@ -70,12 +74,13 @@ impl EventHandler for Handler {
 
             // Ping user in same channel with hint
             let mention = msg.author.id.mention();
-            if let Ok(sent) = msg.channel_id.send_message(&ctx.http, |m| {
-                m.content(format!(
+            let message = CreateMessage::new()
+                .content(format!(
                     "{}, please use `/amazon <link>` to clean and tag your URL.",
                     mention
-                ))
-            }).await {
+                ));
+                
+            if let Ok(sent) = msg.channel_id.send_message(&ctx.http, message).await {
                 // Auto-delete the hint after 10 seconds
                 let http = ctx.http.clone();
                 tokio::spawn(async move {

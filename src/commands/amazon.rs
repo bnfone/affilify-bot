@@ -1,27 +1,44 @@
 // src/commands/amazon.rs
 // Handles the `/amazon` slash command: cleans URLs, tags them, and logs usage.
 
+use serenity::all::{
+    Command, CommandInteraction, CommandOptionType,
+    CreateCommand, CreateCommandOption,
+    CreateInteractionResponse, CreateInteractionResponseMessage,
+    InstallationContext, InteractionContext,
+};
 use serenity::http::Http;
-use serenity::model::application::command::{Command, CommandOptionType};
-use serenity::model::application::interaction::application_command::{ApplicationCommandInteraction, CommandDataOptionValue};
-use serenity::model::application::interaction::InteractionResponseType;
 use serenity::prelude::*;
 use rusqlite::params;
 use super::super::{db, utils, config};
 
 /// Register the `/amazon` slash command with a URL option.
 pub async fn register_commands(http: &Http) {
-    let _ = Command::create_global_application_command(http, |cmd| {
-        cmd.name("amazon")
-            .description("Clean and tag your Amazon link")
-            .create_option(|opt| {
-                opt.name("url")
-                    .description("Your raw Amazon URL, e.g. https://amzn.to/...")
-                    .kind(CommandOptionType::String)
-                    .required(true)
-            })
-    })
-    .await;
+    let command = CreateCommand::new("amazon")
+        .description("Clean and tag your Amazon link")
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::String,
+                "url",
+                "Your raw Amazon URL, e.g. https://amzn.to/..."
+            )
+            .required(true)
+        )
+        .dm_permission(true)
+        // *** WICHTIG für DM-Verwendung: ***
+        // 1) App darf als User-App installiert werden (für DMs):
+        .integration_types(vec![
+            InstallationContext::Guild,
+            InstallationContext::User,      // nötig für DM-Verwendung
+        ])
+        // 2) In welchen Kontexten der Command erscheint:
+        .contexts(vec![
+            InteractionContext::Guild,                // Server
+            InteractionContext::BotDm,                // 1:1 DMs mit dem Bot
+            InteractionContext::PrivateChannel,       // Gruppen-DMs
+        ]);
+
+    let _ = Command::create_global_command(http, command).await;
 }
 
 /// Handler for the `/amazon` command.
@@ -30,17 +47,16 @@ pub async fn register_commands(http: &Http) {
 /// - Retrieves tracking tag and footer template
 /// - Logs usage in the database
 /// - Replies with a plain message: cleaned link + footer
-pub async fn run(ctx: &Context, cmd: &ApplicationCommandInteraction) {
+pub async fn run(ctx: &Context, cmd: &CommandInteraction) {
     // Check if this is a DM or Guild interaction
     let is_dm = cmd.guild_id.is_none();
-    let guild_id = cmd.guild_id.map(|id| id.0.to_string()).unwrap_or_else(|| "DM".to_string());
+    let guild_id = cmd.guild_id.map(|id| id.get().to_string()).unwrap_or_else(|| "DM".to_string());
 
     // Extract raw URL argument
-    let url_raw = if let CommandDataOptionValue::String(u) = &cmd.data.options[0].resolved.as_ref().unwrap() {
-        u.clone()
-    } else {
-        String::new()
-    };
+    let url_raw = cmd.data.options.first()
+        .and_then(|opt| opt.value.as_str())
+        .unwrap_or("")
+        .to_string();
 
     // Resolve redirects
     let resolved = utils::resolve_url(&url_raw).await.unwrap_or_else(|_| url_raw.clone());
@@ -86,13 +102,11 @@ pub async fn run(ctx: &Context, cmd: &ApplicationCommandInteraction) {
 
         // If still no tag available, inform user
         if tag.is_empty() {
-            let _ = cmd
-                .create_interaction_response(&ctx.http, |resp|
-                    resp.kind(InteractionResponseType::ChannelMessageWithSource)
-                        .interaction_response_data(|m| m.content(
-                            "No tracking tag available for this region."
-                        )))
-                .await;
+            let response = CreateInteractionResponse::Message(
+                CreateInteractionResponseMessage::new()
+                    .content("No tracking tag available for this region.")
+            );
+            let _ = cmd.create_response(&ctx.http, response).await;
             return;
         }
 
@@ -111,7 +125,7 @@ pub async fn run(ctx: &Context, cmd: &ApplicationCommandInteraction) {
         let footer = if is_dm {
             footer_template
         } else {
-            let sender_mention = format!("<@{}>", cmd.user.id.0);
+            let sender_mention = format!("<@{}>", cmd.user.id.get());
             if footer_template.contains("{{sender}}") {
                 footer_template.replace("{{sender}}", &sender_mention)
             } else {
@@ -120,21 +134,18 @@ pub async fn run(ctx: &Context, cmd: &ApplicationCommandInteraction) {
         };
 
         // Send plain message: link + "-# footer"
-        let response = format!("{}\n-# {}", clean_url, footer);
-        let _ = cmd
-            .create_interaction_response(&ctx.http, |resp|
-                resp.kind(InteractionResponseType::ChannelMessageWithSource)
-                    .interaction_response_data(|m| m.content(response))
-            )
-            .await;
+        let response_content = format!("{}\n-# {}", clean_url, footer);
+        let response = CreateInteractionResponse::Message(
+            CreateInteractionResponseMessage::new()
+                .content(response_content)
+        );
+        let _ = cmd.create_response(&ctx.http, response).await;
     } else {
         // Parsing failed
-        let _ = cmd
-            .create_interaction_response(&ctx.http, |resp|
-                resp.kind(InteractionResponseType::ChannelMessageWithSource)
-                    .interaction_response_data(|m| m.content(
-                        "Could not parse Amazon URL. Ensure it's valid."
-                    )))
-            .await;
+        let response = CreateInteractionResponse::Message(
+            CreateInteractionResponseMessage::new()
+                .content("Could not parse Amazon URL. Ensure it's valid.")
+        );
+        let _ = cmd.create_response(&ctx.http, response).await;
     }
 }
