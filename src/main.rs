@@ -2,7 +2,7 @@
 // Entry point for Affilify Discord bot in Rust (MIT License)
 use serenity::{
     async_trait,
-    all::{Ready, Interaction, Message, CreateMessage, Mentionable},
+    all::{Ready, Interaction, Message, CreateMessage, Mentionable, CreateButton, CreateActionRow},
     prelude::*,
 };
 
@@ -54,7 +54,7 @@ impl EventHandler for Handler {
         }
     }
 
-    /// Monitor all messages: delete raw Amazon links and send a temporary hint in-channel.
+    /// Monitor all messages: smart handling of Amazon links based on message content.
     async fn message(&self, ctx: Context, msg: Message) {
         // Ignore messages from bots
         if msg.author.bot {
@@ -67,26 +67,63 @@ impl EventHandler for Handler {
         }
 
         let content = msg.content.trim();
-        // Detect raw Amazon or short links
+        
+        // Check if message contains Amazon links
         if content.contains("amazon.") || content.contains("amzn.to") {
-            // Delete original message
-            let _ = msg.delete(&ctx.http).await;
+            let amazon_urls = utils::extract_amazon_urls(content);
+            
+            if amazon_urls.is_empty() {
+                return;
+            }
 
-            // Ping user in same channel with hint
-            let mention = msg.author.id.mention();
-            let message = CreateMessage::new()
-                .content(format!(
-                    "{}, please use `/amazon <link>` to clean and tag your URL.",
-                    mention
-                ));
-                
-            if let Ok(sent) = msg.channel_id.send_message(&ctx.http, message).await {
-                // Auto-delete the hint after 10 seconds
-                let http = ctx.http.clone();
-                tokio::spawn(async move {
-                    tokio::time::sleep(std::time::Duration::from_secs(10)).await;
-                    let _ = sent.delete(&http).await;
-                });
+            // Determine if this is a link-only message or mixed content
+            if utils::is_amazon_link_only(content) {
+                // Link-only message: delete and show hint (current behavior)
+                let _ = msg.delete(&ctx.http).await;
+
+                let mention = msg.author.id.mention();
+                let message = CreateMessage::new()
+                    .content(format!(
+                        "{}, please use `/amazon <link>` to clean and tag your URL.",
+                        mention
+                    ));
+                    
+                if let Ok(sent) = msg.channel_id.send_message(&ctx.http, message).await {
+                    // Auto-delete the hint after 10 seconds
+                    let http = ctx.http.clone();
+                    tokio::spawn(async move {
+                        tokio::time::sleep(std::time::Duration::from_secs(10)).await;
+                        let _ = sent.delete(&http).await;
+                    });
+                }
+            } else {
+                // Mixed content: add button with affiliate link
+                if let Some(first_url) = amazon_urls.first() {
+                    let guild_id = msg.guild_id.map(|id| id.get().to_string());
+                    
+                    if let Some((clean_url, footer_template)) = utils::process_amazon_url(first_url, guild_id).await {
+                        // Construct footer with sender mention support
+                        let sender_mention = format!("<@{}>", msg.author.id.get());
+                        let footer = if footer_template.contains("{{sender}}") {
+                            footer_template.replace("{{sender}}", &sender_mention)
+                        } else {
+                            format!("{} recommended this. {}", sender_mention, footer_template)
+                        };
+                        
+                        // Create button with affiliate link
+                        let button = CreateButton::new_link(&clean_url)
+                            .label("🛒 View on Amazon");
+                        
+                        let action_row = CreateActionRow::Buttons(vec![button]);
+                        
+                        let response_content = format!("-# {}", footer);
+                        let message = CreateMessage::new()
+                            .content(response_content)
+                            .components(vec![action_row]);
+                            
+                        let _ = msg.channel_id.send_message(&ctx.http, message).await;
+                    }
+                }
             }
         }
     }
