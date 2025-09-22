@@ -42,8 +42,8 @@ Add the bot to your user installed apps [here](https://discord.com/oauth2/author
 ### 1. Clone & Build Locally
 
 ```bash
-git clone https://github.com/bnfone/discord-bot-affilify.git
-cd discord-bot-affilify
+git clone https://github.com/bnfone/affilify-bot.git
+cd affilify-bot
 
 # Copy example env and configure your bot
 cp .env.example .env
@@ -142,7 +142,7 @@ Perfect for server admins to track affiliate link performance and see which Amaz
 
 ## 🐳 Docker & Docker Compose
 
-[![CI - Build & Push Multi-Arch Docker Image](https://github.com/bnfone/discord-bot-affilify/actions/workflows/docker-multiarch.yml/badge.svg)](https://github.com/bnfone/discord-bot-affilify/actions/workflows/docker-multiarch.yml)
+[![CI - Build & Push Multi-Arch Docker Image](https://github.com/bnfone/affilify-bot/actions/workflows/docker-multiarch.yml/badge.svg)](https://github.com/bnfone/affilify-bot/actions/workflows/docker-multiarch.yml)
 
 **Dockerfile** builds a multi-stage image:
 
@@ -154,7 +154,7 @@ FROM rust:1-bullseye-slim AS builder
 # Stage 2: Runtime (Debian Bullseye)
 FROM debian:bullseye-slim
 RUN apt-get update && apt-get install -y libssl1.1 ca-certificates
-COPY --from=builder /usr/local/bin/discord-bot-affilify /usr/local/bin/
+COPY --from=builder /usr/local/bin/affilify-bot /usr/local/bin/
 ```
 
 **docker-compose.yml** snippet:

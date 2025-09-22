@@ -101,12 +101,12 @@ Our Service is operated from Germany. By using the Service, you consent to the t
 
 If you have questions about this Privacy Policy or our data practices, contact us:
 
-- **GitHub Issues**: https://github.com/bnfone/discord-bot-affilify/issues
+- **GitHub Issues**: https://github.com/bnfone/affilify-bot/issues
 
 ## Open Source Transparency
 
 Affilify is open-source software. You can review our code, data handling practices, and security measures at:
-https://github.com/bnfone/discord-bot-affilify
+https://github.com/bnfone/affilify-bot
 
 ## Compliance
 

@@ -156,13 +156,13 @@ Affilify is open-source software licensed under the MIT License. You may:
 - Create derivative works under the same license
 - Use the code for commercial or non-commercial purposes
 
-The MIT License terms are available at: https://github.com/bnfone/discord-bot-affilify/blob/master/LICENSE
+The MIT License terms are available at: https://github.com/bnfone/affilify-bot/blob/master/LICENSE
 
 ## Contact Information
 
 For questions about these Terms of Service:
 
-- **GitHub Issues**: https://github.com/bnfone/discord-bot-affilify/issues
+- **GitHub Issues**: https://github.com/bnfone/affilify-bot/issues
 
 ## Severability
 

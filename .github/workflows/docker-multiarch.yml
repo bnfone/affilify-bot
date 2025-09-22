@@ -33,5 +33,5 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           tags: |
-            ghcr.io/${{ github.repository_owner }}/discord-bot-affilify:latest
-            ghcr.io/${{ github.repository_owner }}/discord-bot-affilify:${{ github.ref_name }}
+            ghcr.io/${{ github.repository_owner }}/affilify-bot:latest
+            ghcr.io/${{ github.repository_owner }}/affilify-bot:${{ github.ref_name }}
