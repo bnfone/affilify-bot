@@ -245,7 +245,25 @@ DEFAULT_SIGNATURE="🤖 Powered by Affilify Bot - Supporting developers worldwid
 
 ## 📄 Changelog
 
-### Version 4.0.0 - Full DM Support & Enhanced Statistics
+### Version 1.3.0 - Smart Link Handling
+
+#### 🧠 Intelligent Message Processing
+- **Smart Link Detection**: Bot now distinguishes between link-only messages and mixed content
+- **Context-Aware Responses**: Link-only messages get deleted with hint, mixed content gets enhanced with buttons
+- **Multiple Link Support**: Process up to 5 Amazon links per message with numbered buttons
+- **Advanced URL Parsing**: Improved detection of Amazon URLs with and without protocols
+
+#### 🔘 Enhanced User Interface
+- **Dynamic Button Labels**: Single links show "🛒 View on Amazon", multiple links show "🛒 View on Amazon (1)", "(2)", etc.
+- **Preserved Conversations**: Mixed content messages stay intact while adding affiliate link access
+- **Footer Integration**: All button responses include configured server footers with sender mentions
+
+#### 🔧 Technical Improvements
+- **Robust URL Extraction**: Enhanced regex patterns handle complex Amazon URLs with parameters
+- **Better UX Flow**: Users no longer forced to rewrite long messages that mention products
+- **Affiliate Optimization**: Maximizes affiliate link opportunities without disrupting conversations
+
+### Version 1.2.0 - Full DM Support & Enhanced Statistics
 
 #### 🚀 DM & Group Chat Support  
 - **Complete DM Integration**: `/amazon` command now works in Direct Messages and Group Chats
@@ -271,7 +289,7 @@ DEFAULT_SIGNATURE="🤖 Powered by Affilify Bot - Supporting developers worldwid
 - **Visual Feedback**: Enhanced statistics with meaningful data visualization
 - **Professional Polish**: Consistent design language across all bot interactions
 
-### Version 3.0.0 - Professional Modal Interface & Global Amazon Support
+### Version 1.1.0 - Professional Modal Interface & Global Amazon Support
 
 #### 🎨 Revolutionary User Experience
 - **Smart Autocomplete Interface**: Type `/configure` and get beautiful dropdown with flag emojis
@@ -302,19 +320,15 @@ DEFAULT_SIGNATURE="🤖 Powered by Affilify Bot - Supporting developers worldwid
 - **Flexible Configuration**: Individual regions or global batch updates
 - **Error Prevention**: Clear validation and helpful error messages
 
-#### 🔄 Migration from v2.0.0
-- **Enhanced Commands**: `/configure` now features professional autocomplete interface
-- **Backward Compatible**: All existing configurations preserved and enhanced
-- **Improved Environment**: Updated `.env` structure with organized regional groupings
-- **Streamlined Setup**: Configuration is now a delightful, guided experience
+### Version 1.0.0 - User Install & Developer Fallback Support
 
-### Version 2.0.0 - User Install & Developer Fallback Support
-
-#### 🆕 Previous Features
+#### 🆕 Core Features
 - **User Install Support**: Bot works as both server and user installation
 - **Developer Fallback System**: Automatic compensation for unconfigured usage
 - **DM Support**: Full functionality in Direct Messages
 - **Smart Context Detection**: Automatic DM vs server context handling
+- **Multi-Guild Support**: Separate configuration and statistics per server
+- **Affiliate Link Processing**: Clean and tag Amazon URLs with tracking codes
 
 ---
 

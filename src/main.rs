@@ -21,7 +21,8 @@ struct Handler;
 impl EventHandler for Handler {
     /// Called when the bot successfully connects to Discord.
     async fn ready(&self, ctx: Context, ready: Ready) {
-        println!("{} is connected!", ready.user.name);
+        const VERSION: &str = env!("CARGO_PKG_VERSION");
+        println!("🤖 {} v{} is connected and ready!", ready.user.name, VERSION);
         // Register slash commands at startup
         commands::configure::register_commands(&ctx.http).await;
         commands::amazon::register_commands(&ctx.http).await;
@@ -97,32 +98,54 @@ impl EventHandler for Handler {
                     });
                 }
             } else {
-                // Mixed content: add button with affiliate link
-                if let Some(first_url) = amazon_urls.first() {
-                    let guild_id = msg.guild_id.map(|id| id.get().to_string());
-                    
-                    if let Some((clean_url, footer_template)) = utils::process_amazon_url(first_url, guild_id).await {
-                        // Construct footer with sender mention support
-                        let sender_mention = format!("<@{}>", msg.author.id.get());
-                        let footer = if footer_template.contains("{{sender}}") {
-                            footer_template.replace("{{sender}}", &sender_mention)
+                // Mixed content: add button(s) with affiliate link(s)
+                let guild_id = msg.guild_id.map(|id| id.get().to_string());
+                let mut buttons = Vec::new();
+                let mut footer_template = String::new();
+                
+                // Process all Amazon URLs in the message
+                for (i, url) in amazon_urls.iter().enumerate() {
+                    if let Some((clean_url, template)) = utils::process_amazon_url(url, guild_id.clone()).await {
+                        // Use footer template from first successful processing
+                        if footer_template.is_empty() {
+                            footer_template = template;
+                        }
+                        
+                        // Create button label based on number of links
+                        let label = if amazon_urls.len() > 1 {
+                            format!("🛒 View on Amazon ({})", i + 1)
                         } else {
-                            format!("{} recommended this. {}", sender_mention, footer_template)
+                            "🛒 View on Amazon".to_string()
                         };
                         
-                        // Create button with affiliate link
-                        let button = CreateButton::new_link(&clean_url)
-                            .label("🛒 View on Amazon");
+                        let button = CreateButton::new_link(&clean_url).label(&label);
+                        buttons.push(button);
                         
-                        let action_row = CreateActionRow::Buttons(vec![button]);
-                        
-                        let response_content = format!("-# {}", footer);
-                        let message = CreateMessage::new()
-                            .content(response_content)
-                            .components(vec![action_row]);
-                            
-                        let _ = msg.channel_id.send_message(&ctx.http, message).await;
+                        // Discord has a limit of 5 buttons per action row
+                        if buttons.len() >= 5 {
+                            break;
+                        }
                     }
+                }
+                
+                // Only send message if we have at least one button
+                if !buttons.is_empty() {
+                    // Construct footer with sender mention support
+                    let sender_mention = format!("<@{}>", msg.author.id.get());
+                    let footer = if footer_template.contains("{{sender}}") {
+                        footer_template.replace("{{sender}}", &sender_mention)
+                    } else {
+                        format!("{} recommended this. {}", sender_mention, footer_template)
+                    };
+                    
+                    let action_row = CreateActionRow::Buttons(buttons);
+                    
+                    let response_content = format!("-# {}", footer);
+                    let message = CreateMessage::new()
+                        .content(response_content)
+                        .components(vec![action_row]);
+                        
+                    let _ = msg.channel_id.send_message(&ctx.http, message).await;
                 }
             }
         }

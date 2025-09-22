@@ -38,13 +38,34 @@ pub fn parse_amazon_url(url_str: &str) -> Option<(String, String)> {
 pub fn extract_amazon_urls(content: &str) -> Vec<String> {
     let mut urls = Vec::new();
     
-    // Simple regex to find URLs in text
+    // First find URLs with protocols (http:// or https://)
+    // Using a more robust regex that handles complex URLs
     let url_regex = Regex::new(r"https?://[^\s]+").unwrap();
     
     for url_match in url_regex.find_iter(content) {
         let url = url_match.as_str();
         if url.contains("amazon.") || url.contains("amzn.to") {
             urls.push(url.to_string());
+        }
+    }
+    
+    // Then find URLs without protocols (amazon.* or amzn.to)
+    let amazon_regex = Regex::new(r"(?:^|[\s])((?:amazon\.[a-z.]+|amzn\.to)[^\s]*)").unwrap();
+    
+    for cap in amazon_regex.captures_iter(content) {
+        if let Some(url_match) = cap.get(1) {
+            let url = url_match.as_str();
+            // Add https:// prefix if not already present
+            let full_url = if url.starts_with("http") {
+                url.to_string()
+            } else {
+                format!("https://{}", url)
+            };
+            
+            // Avoid duplicates from the first regex
+            if !urls.contains(&full_url) {
+                urls.push(full_url);
+            }
         }
     }
     
@@ -60,13 +81,19 @@ pub fn is_amazon_link_only(content: &str) -> bool {
         return false;
     }
     
-    // Remove all Amazon URLs and check if anything meaningful remains
+    // Remove all URLs (with and without protocols) and check if anything meaningful remains
+    let mut remaining = trimmed.to_string();
+    
+    // Remove URLs with protocols
     let url_regex = Regex::new(r"https?://[^\s]+").unwrap();
-    let replaced = url_regex.replace_all(trimmed, "");
-    let without_urls = replaced.trim();
+    remaining = url_regex.replace_all(&remaining, "").to_string();
+    
+    // Remove URLs without protocols (amazon.* or amzn.to)
+    let amazon_regex = Regex::new(r"(?:^|[\s])((?:amazon\.[a-z.]+|amzn\.to)[^\s]*)").unwrap();
+    remaining = amazon_regex.replace_all(&remaining, "").to_string();
     
     // If after removing URLs there's only whitespace, it's a link-only message
-    without_urls.is_empty()
+    remaining.trim().is_empty()
 }
 
 /// Process an Amazon URL and return (clean_url, footer_text)
