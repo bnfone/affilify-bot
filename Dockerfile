@@ -22,5 +22,5 @@ RUN apt-get update && \
 COPY --from=builder /usr/src/affilify-bot/target/release/affilify-bot /usr/local/bin/affilify-bot
 COPY .env.example ./.env
 
-VOLUME [ "/app/bot.db" ]
+VOLUME [ "/app/data" ]
 ENTRYPOINT ["affilify-bot"]

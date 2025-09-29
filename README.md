@@ -51,8 +51,8 @@ cp .env.example .env
 # Configure default tracking IDs for each Amazon region
 # Set your preferred DEFAULT_SIGNATURE for DMs
 
-# Create the SQLite file before running
-touch bot.db
+# Create the data directory (database will be auto-created)
+mkdir -p data
 
 # Run locally
 cargo run
@@ -166,13 +166,13 @@ services:
     restart: unless-stopped
     env_file: .env
     volumes:
-      - ./bot.db:/app/bot.db
+      - ./data:/app/data
 ```
 
 Before `docker compose up -d`, run:
 
 ```bash
-touch bot.db
+mkdir -p data
 ```
 
 ---
@@ -198,7 +198,7 @@ The `.env` file supports the following configuration:
 ```env
 # Required
 DISCORD_TOKEN=your_bot_token_here
-DATABASE_URL=sqlite://./bot.db
+DATABASE_URL=sqlite://./data/bot.db
 
 # Default tracking tags for developer compensation (19 Amazon marketplaces)
 # North America
@@ -238,8 +238,9 @@ DEFAULT_SIGNATURE="🤖 Powered by Affilify Bot - Supporting developers worldwid
 
 ### Database
 
-* **SQLite DB**: the file referenced by `DATABASE_URL` **must exist** before the bot starts, or create it with `touch bot.db`.
-* The bot automatically creates the necessary tables on first run.
+* **SQLite DB**: The bot automatically creates the database file and necessary tables on first run.
+* **Data Directory**: Database is stored in `./data/bot.db` - the `data/` directory will be created automatically if it doesn't exist.
+* **Docker-Ready**: Perfect for Docker volume mounting - mount `./data:/app/data` to persist your database.
 
 ---
 

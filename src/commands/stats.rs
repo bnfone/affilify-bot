@@ -23,7 +23,7 @@ pub async fn register_commands(http: &Http) {
 
 pub async fn run(ctx: &Context, cmd: &CommandInteraction) {
     let guild_id = cmd.guild_id.unwrap().get().to_string();
-    let (global_count, guild_count, top_regions) = db::with_connection(|conn| {
+    let (global_count, guild_count, top_regions) = match db::with_connection(|conn| {
         let global: i64 = conn.query_row("SELECT COUNT(*) FROM link_stats", [], |r| r.get(0))?;
         let local: i64 = conn.query_row("SELECT COUNT(*) FROM link_stats WHERE guild_id = ?", params![guild_id], |r| r.get(0))?;
         
@@ -36,7 +36,19 @@ pub async fn run(ctx: &Context, cmd: &CommandInteraction) {
         })?.collect::<Result<Vec<_>, _>>()?;
         
         Ok((global, local, regions))
-    }).unwrap();
+    }) {
+        Ok(data) => data,
+        Err(e) => {
+            eprintln!("Database error in stats command: {}", e);
+            let error_response = CreateInteractionResponse::Message(
+                CreateInteractionResponseMessage::new()
+                    .content("❌ Unable to fetch statistics. Please try again later.")
+                    .ephemeral(true)
+            );
+            let _ = cmd.create_response(&ctx.http, error_response).await;
+            return;
+        }
+    };
 
     // Build top regions field
     let regions_text = if top_regions.is_empty() {

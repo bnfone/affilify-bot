@@ -4,6 +4,17 @@ use std::path::Path;
 
 pub fn init() -> rusqlite::Result<()> {
     let db_path = super::config::database_url();
+    
+    // Create parent directory if it doesn't exist
+    if let Some(parent) = Path::new(&db_path).parent() {
+        std::fs::create_dir_all(parent).map_err(|e| {
+            rusqlite::Error::SqliteFailure(
+                rusqlite::ffi::Error::new(rusqlite::ffi::SQLITE_CANTOPEN),
+                Some(format!("Failed to create directory: {}", e))
+            )
+        })?;
+    }
+    
     let init = !Path::new(&db_path).exists();
     let conn = Connection::open(&db_path)?;
     if init {

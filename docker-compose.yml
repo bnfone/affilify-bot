@@ -10,10 +10,10 @@ services:
     env_file:
       - .env
 
-    # Mount die lokale Datenbank ins Container-Verzeichnis
+    # Mount das lokale data-Verzeichnis ins Container
     volumes:
       - type: bind
-        source: ./bot.db
-        target: /app/bot.db
+        source: ./data
+        target: /app/data
 
     # Keine Ports nötig für Discord-Bots
